@@ -2,6 +2,7 @@ from django.shortcuts import render
 from main.models import Product, ProductAccess, Group, Teacher, Student, Lesson
 from django.db.models import Q
 from datetime import datetime
+from rest_framework import serializers, viewsets
 
 
 # функция для перераспределения по группам
@@ -105,3 +106,38 @@ def distribute_max_values(request):
                 access_products(product, student)
 
     return render(request, 'main/max_value.html', data)
+
+
+# api для получения списка продуктов с количеством уроков
+class ProductSerializer(serializers.ModelSerializer):
+    num_lessons = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = ('id', 'name_product', 'num_lessons', 'price', 'date_start')
+
+    def get_num_lessons(self, obj):
+        return Lesson.objects.filter(product=obj).count()
+
+
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+
+# API для получения списка уроков по продукту, к которому студент имеет доступ
+class LessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ('id', 'name_lesson', 'video')
+
+
+class LessonViewSet(viewsets.ModelViewSet):
+    serializer_class = LessonSerializer
+
+    def get_queryset(self):
+        student = self.request
+        # product_access = ProductAccess.objects.filter(student=student)
+        # products = [access.product for access in product_access]
+        # return Lesson.objects.filter(product__in=products)
+        return student

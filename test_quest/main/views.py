@@ -36,14 +36,12 @@ def group_distribution(product, student):
     min_students_products = students_products.min_students_group
     max_students_products = students_products.max_students_group
     group_min_number = 1000
-    counter = 0
     group_min = groups[0]
 
     # цикл для разбора каждой группы
-    for group in groups:
+    for counter, group in enumerate(groups):
         # количество студентов в группе
         students_group = group.list_student.count()
-        counter += 1
         if min_students_products > students_group:
             # добавляем студентов в группу если количество участников меньше минимума
             group.list_student.add(Student.objects.get(pk=student))
